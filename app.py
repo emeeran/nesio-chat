@@ -78,24 +78,9 @@ system_messages = {
 voice_options = {
     "English (US)": "en",
     "English (UK)": "en-gb",
-    "Spanish": "es",
-    "French": "fr",
-    "German": "de",
-    "Italian": "it",
-    "Portuguese": "pt",
-    "Russian": "ru",
-    "Japanese": "ja",
-    "Korean": "ko",
-    "Chinese": "zh-cn",
+    "English (IND)": "en-in",
+    "Tamil": "ta",
     "Hindi": "hi",
-    "Arabic": "ar",
-    "Turkish": "tr",
-    "Dutch": "nl",
-    "Swedish": "sv",
-    "Norwegian": "no",
-    "Danish": "da",
-    "Finnish": "fi",
-    "Polish": "pl"
 }
 
 # Initialize session state
