@@ -53,12 +53,13 @@ openai_voices = ["alloy", "echo", "fable", "onyx", "nova", "shimmer"]
 MAX_MESSAGES = 450
 
 def add_message(role: str, content: str):
+    """Add a message to the chat history."""
     st.session_state.messages.append({"role": role, "content": content})
     if len(st.session_state.messages) > MAX_MESSAGES:
         st.session_state.messages = st.session_state.messages[-MAX_MESSAGES:]
 
-@st.cache_data
 def process_image(file) -> tuple:
+    """Process an uploaded image file and extract text."""
     try:
         with Image.open(file) as image:
             img_byte_arr = BytesIO()
@@ -70,8 +71,8 @@ def process_image(file) -> tuple:
         st.error(f"Error extracting text from image: {str(e)}")
         return None, None
 
-@st.cache_data
 def process_pdf(file) -> str:
+    """Process an uploaded PDF file and extract text."""
     try:
         with tempfile.NamedTemporaryFile(delete=False) as temp_file:
             temp_file.write(file.read())
@@ -84,8 +85,8 @@ def process_pdf(file) -> str:
         st.error(f"Error processing PDF file: {str(e)}")
         return None
 
-@st.cache_data
 def process_docx(file) -> str:
+    """Process an uploaded DOCX file and extract text."""
     try:
         return docx2txt.process(file)
     except Exception as e:
@@ -93,6 +94,7 @@ def process_docx(file) -> str:
         return None
 
 def process_file(file) -> None:
+    """Process the uploaded file based on its type."""
     file_type = file.type
     try:
         if file_type.startswith("image"):
@@ -125,6 +127,7 @@ def process_file(file) -> None:
         st.error(f"Error processing file: {str(e)}")
 
 async def summarize_content(content: str, content_type: str) -> None:
+    """Summarize the provided content using OpenAI's API."""
     try:
         response = await client.chat.completions.create(
             model=st.session_state.model,
@@ -142,7 +145,7 @@ async def summarize_content(content: str, content_type: str) -> None:
         st.error(f"Error summarizing {content_type} content: {str(e)}")
 
 def get_current_weather(location, unit="celsius"):
-    # Implement weather fetching logic (placeholder)
+    """Fetch current weather data (placeholder implementation)."""
     return {"temperature": 22, "unit": unit, "description": "Sunny"}
 
 functions = [
@@ -164,8 +167,8 @@ functions = [
 ]
 
 async def generate_response(user_input: str, system_message: str) -> None:
-    messages = [{"role": "system", "content": system_message}]
-    messages.extend(st.session_state.messages)
+    """Generate a response from the model based on user input."""
+    messages = [{"role": "system", "content": system_message}] + st.session_state.messages
 
     try:
         response_container = st.empty()
@@ -223,6 +226,7 @@ async def generate_response(user_input: str, system_message: str) -> None:
         st.error(f"An error occurred: {str(e)}")
 
 def reset_all() -> None:
+    """Reset all session state variables."""
     st.session_state.messages = []
     st.session_state.token_count = 0
     st.session_state.cost = 0
@@ -372,9 +376,6 @@ st.title("NesiO-Chat")
 # Create a container for the chat history
 chat_container = st.container()
 
-# Create a container for the input box at the bottom
-input_container = st.container()
-
 # Display chat messages in the chat history container
 with chat_container:
     for message in st.session_state.messages:
@@ -383,27 +384,23 @@ with chat_container:
             if "image" in message:
                 st.image(message["image"], caption="Uploaded Image")
 
-# Add some vertical space to push the input box to the bottom
-st.markdown("<br>" * 10, unsafe_allow_html=True)
-
 # User input at the bottom
-with input_container:
-    user_input = st.chat_input("Type your message here...")
+user_input = st.chat_input("Type your message here...")
 
-    # Process user input
-    if user_input:
-        add_message("user", user_input)
-        system_message = (
-            system_messages[selected_system_message]
-            if selected_system_message != "Custom"
-            else custom_system_message
-        )
-        asyncio.run(generate_response(user_input, system_message))
+# Process user input
+if user_input:
+    add_message("user", user_input)
+    system_message = (
+        system_messages[selected_system_message]
+        if selected_system_message != "Custom"
+        else custom_system_message
+    )
+    asyncio.run(generate_response(user_input, system_message))
 
-        # Rerun the app to update the chat history
-        st.rerun()
+    # Rerun the app to update the chat history
+    st.rerun()
 
-# Custom CSS to make the chat container scrollable
+# Custom CSS to make the chat container scrollable and improve UI
 st.markdown("""
     <style>
     .stApp {
@@ -415,6 +412,19 @@ st.markdown("""
         overflow-y: auto;
         display: flex;
         flex-direction: column-reverse;
+    }
+    .chat-message {
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 10px;
+    }
+    .chat-message.user {
+        background-color: #e0f7fa;
+        align-self: flex-end;
+    }
+    .chat-message.assistant {
+        background-color: #ffe0b2;
+        align-self: flex-start;
     }
     </style>
     """, unsafe_allow_html=True)
